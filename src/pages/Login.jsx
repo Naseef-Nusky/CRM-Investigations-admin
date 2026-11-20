@@ -7,6 +7,8 @@ export default function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('admin@bespoke.local')
   const [password, setPassword] = useState('Admin@Secure123!')
+  const [totpCode, setTotpCode] = useState('')
+  const [needs2FA, setNeeds2FA] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -23,14 +25,19 @@ export default function Login() {
     }
     setSubmitting(true)
     try {
-      const loggedIn = await login(email.trim(), password)
+      const loggedIn = await login(email.trim(), password, totpCode || undefined)
       if (loggedIn.role === 'INVESTIGATOR') {
         setError('Investigators must use the Investigator Portal')
         return
       }
       navigate('/')
     } catch (err) {
-      setError(err.message || 'Login failed')
+      if (err.payload?.requires2FA) {
+        setNeeds2FA(true)
+        setError(err.message || 'Enter your authenticator code')
+      } else {
+        setError(err.message || 'Login failed')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -72,6 +79,22 @@ export default function Login() {
               required
             />
           </div>
+          {needs2FA && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1" htmlFor="totp">
+                Authenticator code
+              </label>
+              <input
+                id="totp"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value)}
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800"
+                placeholder="6-digit code"
+              />
+            </div>
+          )}
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
               {error}

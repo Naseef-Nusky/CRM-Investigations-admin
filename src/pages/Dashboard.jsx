@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
+import { Badge, CASE_STATUSES, money } from '../components/ui'
 
 function Stat({ label, value, tone = 'slate' }) {
   const tones = {
     slate: 'bg-white border-slate-200',
     amber: 'bg-amber-50 border-amber-200',
     sky: 'bg-sky-50 border-sky-200',
+    green: 'bg-emerald-50 border-emerald-200',
+    red: 'bg-red-50 border-red-200',
   }
   return (
     <div className={`rounded-lg border p-4 ${tones[tone]}`}>
@@ -42,6 +45,86 @@ export default function Dashboard() {
         <Stat label="Calls today" value={data.stats.callsToday} />
         <Stat label="Outstanding callbacks" value={data.stats.outstandingCallbacks} tone="amber" />
       </div>
+
+      {(data.payments || data.quotations || data.stats.dueReminders !== undefined) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {data.payments && (
+            <>
+              <Stat label="Revenue today" value={money(data.payments.revenueToday)} tone="green" />
+              <Stat label="Revenue this month" value={money(data.payments.revenueMonth)} />
+              <Stat
+                label={`Outstanding invoices (${data.payments.outstandingInvoices?.count ?? 0})`}
+                value={money(data.payments.outstandingInvoices?.total ?? 0)}
+                tone="amber"
+              />
+              <Stat label="Pending payments" value={data.payments.pendingPayments} tone="amber" />
+            </>
+          )}
+          {data.quotations && (
+            <>
+              <Stat label="Quotes issued" value={data.quotations.ISSUED} tone="sky" />
+              <Stat label="Quotes accepted" value={data.quotations.ACCEPTED} tone="green" />
+              <Stat label="Quotes declined" value={data.quotations.DECLINED} />
+            </>
+          )}
+          {data.stats.dueReminders !== undefined && (
+            <Stat label="Reminders due" value={data.stats.dueReminders} tone={data.stats.dueReminders ? 'red' : 'slate'} />
+          )}
+          {data.stats.readyForAllocation !== undefined && (
+            <Stat label="Ready for allocation" value={data.stats.readyForAllocation} tone="sky" />
+          )}
+          {data.stats.awaitingManagementReview !== undefined && (
+            <Stat label="Awaiting review" value={data.stats.awaitingManagementReview} tone="amber" />
+          )}
+        </div>
+      )}
+
+      {data.caseStatusCounts && (
+        <section className="bg-white border border-slate-200 rounded-lg p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-900">Case pipeline</h3>
+            <Link to="/cases" className="text-sm text-slate-600 hover:underline">
+              View cases
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {CASE_STATUSES.map((status) => (
+              <Link
+                key={status}
+                to={`/cases?status=${status}`}
+                className="rounded-md border border-slate-200 p-3 hover:bg-slate-50"
+              >
+                <p className="text-xl font-semibold text-slate-900">{data.caseStatusCounts[status] || 0}</p>
+                <div className="mt-1">
+                  <Badge status={status} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {data.investigatorWorkload?.length > 0 && (
+        <section className="bg-white border border-slate-200 rounded-lg p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-900">Investigator workload</h3>
+            <Link to="/investigators" className="text-sm text-slate-600 hover:underline">
+              View all
+            </Link>
+          </div>
+          <ul className="space-y-2 text-sm">
+            {data.investigatorWorkload.map((i) => (
+              <li key={i.id} className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="text-slate-800">
+                  {i.name}
+                  {i.availability && <span className="text-slate-500"> · {i.availability}</span>}
+                </span>
+                <span className="text-slate-700">{i.activeCases} active</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="bg-white border border-slate-200 rounded-lg p-5">

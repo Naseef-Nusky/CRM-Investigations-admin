@@ -8,7 +8,15 @@ import Clients from './pages/Clients'
 import ClientDetail from './pages/ClientDetail'
 import Calls from './pages/Calls'
 import Enquiries from './pages/Enquiries'
-import Placeholder from './pages/Placeholder'
+import Services from './pages/Services'
+import Quotations from './pages/Quotations'
+import Cases from './pages/Cases'
+import CaseDetail from './pages/CaseDetail'
+import Investigators from './pages/Investigators'
+import Finance from './pages/Finance'
+import Emails from './pages/Emails'
+import Reminders from './pages/Reminders'
+import Settings from './pages/Settings'
 
 export default function App() {
   return (
@@ -29,13 +37,15 @@ export default function App() {
             <Route path="clients/:id" element={<ClientDetail />} />
             <Route path="calls" element={<Calls />} />
             <Route path="enquiries" element={<Enquiries />} />
-            <Route path="cases" element={<Placeholder title="Investigation cases" phase="6" />} />
-            <Route
-              path="investigators"
-              element={<Placeholder title="Investigator management" phase="6–7" />}
-            />
-            <Route path="finance" element={<Placeholder title="Finance & invoicing" phase="3" />} />
-            <Route path="settings" element={<Placeholder title="System settings" phase="1+" />} />
+            <Route path="services" element={<Services />} />
+            <Route path="quotations" element={<Quotations />} />
+            <Route path="cases" element={<Cases />} />
+            <Route path="cases/:id" element={<CaseDetail />} />
+            <Route path="investigators" element={<Investigators />} />
+            <Route path="finance" element={<Finance />} />
+            <Route path="emails" element={<Emails />} />
+            <Route path="reminders" element={<Reminders />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
